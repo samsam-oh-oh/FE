@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="transparent">#00ff0000</color>
+
+    <color name="brand_blue">#188AFD</color>
+    <color name="brand_orange">#FD8B18</color>
+
+    <color name="brand_blue_50">#E3F3FF</color>
+    <color name="brand_blue_100">#BCDFFF</color>
+    <color name="brand_blue_200">#8FCDFF</color>
+    <color name="brand_blue_300">#5FB8FF</color>
+    <color name="brand_blue_400">#3BAAFF</color>
+    <color name="brand_blue_500">#0E9AFF</color>
+    <color name="brand_blue_600">#188BFD</color>
+    <color name="brand_blue_700">#1C78E9</color>
+    <color name="brand_blue_800">#1D66D7</color>
+    <color name="brand_blue_900">#1E46B7</color>
+
+    <color name="brand_orange_50">#FFF3E1</color>
+    <color name="brand_orange_100">#FFDFB4</color>
+    <color name="brand_orange_200">#FFCB83</color>
+    <color name="brand_orange_300">#FFB653</color>
+    <color name="brand_orange_400">#FFA530</color>
+    <color name="brand_orange_500">#FF9619</color>
+    <color name="brand_orange_600">#FD8B18</color>
+    <color name="brand_orange_700">#F77B17</color>
+    <color name="brand_orange_800">#F06B16</color>
+    <color name="brand_orange_900">#E65114</color>
+
+    <color name="gray_50">#FAFAFA</color>
+    <color name="gray_100">#F5F5F5</color>
+    <color name="gray_200">#EEEEEE</color>
+    <color name="gray_300">#E0E0E0</color>
+    <color name="gray_400">#BDBDBD</color>
+    <color name="gray_500">#9E9E9E</color>
+    <color name="gray_600">#757575</color>
+    <color name="gray_700">#616161</color>
+    <color name="gray_800">#424242</color>
+    <color name="gray_900">#212121</color>
+    <color name="textcolor">#0E9AFF</color>
+
+    <color name="status">#D00000</color>
+
+    <color name="colorPrimary">#6200EE</color>
+    <color name="colorPrimaryDark">#3700B3</color>
+    <color name="colorAccent">#03DAC5</color>
+    <color name="colorButtonSelected">#6200EE</color>
+    <color name="colorButtonUnselected">#FFFFFF</color>
+    <color name="colorButtonUnselectedBorder">#6200EE</color>
+
+</resources>
