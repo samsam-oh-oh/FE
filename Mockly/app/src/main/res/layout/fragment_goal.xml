@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#F0F0F0"
+    tools:context=".ui.GoalFragment">
+
+    <TextView
+        android:id="@+id/header_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="My Goal"
+        android:textSize="25dp"
+        android:textStyle="bold"
+        android:textColor="#0E9AFF"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="20dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        />
+
+    <!-- Header with personal and team buttons -->
+    <LinearLayout
+        android:id="@+id/headerLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="16dp"
+        android:background="#F0F0F0"
+        app:layout_constraintTop_toBottomOf="@id/header_title"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <Button
+            android:id="@+id/personalButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="개인"
+            android:textSize="14dp"
+            android:textStyle="bold"
+            android:textColor="@color/white"
+            android:background="@drawable/circle_choose_btn"/>
+
+        <Button
+            android:id="@+id/teamButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="팀"
+            android:textSize="14dp"
+            android:textStyle="bold"
+            android:textColor="#0E9AFF"
+            android:background="@drawable/circle_btn"/>
+    </LinearLayout>
+
+    <!-- Sub-header with in-progress and completed buttons -->
+    <LinearLayout
+        android:id="@+id/subHeaderLayout"
+        android:layout_width="wrap_content"
+        android:layout_height="30dp"
+        android:orientation="horizontal"
+        app:layout_constraintTop_toBottomOf="@id/headerLayout"
+        android:layout_marginTop="10dp"
+        android:layout_marginStart="20dp"
+        app:chipIconVisible="false"
+        android:checkable="true"
+        tools:ignore="MissingConstraints"
+        app:layout_goneMarginStart="20dp">
+
+        <Button
+            android:id="@+id/inProgressButton"
+            android:layout_width="70dp"
+            android:layout_height="wrap_content"
+            android:text="진행중"
+            android:textColor="#FFFFFF"
+            android:textSize="14dp"
+            android:textStyle="bold"
+            android:background="@drawable/circle_choose_btn"
+            android:layout_marginStart="20dp"/>
+
+        <Button
+            android:id="@+id/completedButton"
+            android:layout_width="70dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:background="@drawable/circle_btn"
+            android:textColor="#0E9AFF"
+            android:text="종료"
+            android:textSize="14dp"
+            android:textStyle="bold" />
+
+
+
+
+
+
+    </LinearLayout>
+
+    <!-- Scrollable content area -->
+    <ScrollView
+        android:id="@+id/scrollView"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintTop_toBottomOf="@id/subHeaderLayout"
+        app:layout_constraintBottom_toTopOf="@id/floatingActionButton"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+        <!-- Add goal items here -->
+        <!-- Example of a goal item -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/goal_fragment_recycler_view"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="60dp"
+            app:layout_constraintTop_toBottomOf="@id/subHeaderLayout"
+            app:layout_constraintBottom_toTopOf="@id/floatingActionButton"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            tools:listitem="@layout/item_teamprogress"/>
+    </ScrollView>
+
+    <Button
+        android:id="@+id/floatingActionButton"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:background="@drawable/fragmet_add_goal_page"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:text="+"
+        android:textSize="30dp"
+        android:textColor="@color/white"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginEnd="5dp"
+        android:layout_marginBottom="5dp" />
+
+    <!-- Floating action button -->
+    <TextView
+        android:id="@+id/goal_remove"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:background="#F0F0F0"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:textSize="30dp"
+        android:textColor="@color/white"
+        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginEnd="5dp"
+        android:layout_marginBottom="5dp" />
+</androidx.constraintlayout.widget.ConstraintLayout>

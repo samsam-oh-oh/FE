@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:tools="http://schemas.android.com/tools"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/scheduleFragment"
+        android:icon="@drawable/icn_schedule"
+        app:showAsAction="always"
+        android:enabled="true"
+        android:title="@null"
+        tools:ignore="AlwaysShowAction" />
+    <item
+        android:id="@+id/goalFragment"
+        android:icon="@drawable/icn_goal"
+        app:showAsAction="always"
+        android:title="@null"/>
+
+    <item
+        android:id="@+id/mypageFragment"
+        android:icon="@drawable/icn_mypage"
+        app:showAsAction="always"
+        android:title="@null"/>
+
+</menu>
