@@ -1,4 +1,8 @@
+package com.example.mockly
 
+import MypageFragment
+import RankingFragment
+import ScheduleFragment
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -20,7 +24,8 @@ class MainActivity : AppCompatActivity() {
         supportActionBar?.hide() // 액션바 숨기기
 
         if (savedInstanceState == null) {
-            showLoginFragment()
+            showMainActivity()
+            //showMainActivity()
         }
     }
 
@@ -28,9 +33,10 @@ class MainActivity : AppCompatActivity() {
     private fun showLoginFragment() {
         binding.mainBnv.visibility = View.GONE
         supportFragmentManager.beginTransaction()
-            .replace(R.id.main_frm, ScheduleFragment())  // 여기서 main_frm 사용
+            .replace(R.id.main_frm, LoginFragment())  // ✅ 진짜 로그인 화면 띄움
             .commitAllowingStateLoss()
     }
+
 
     fun showMainActivity() {
         binding.mainBnv.visibility = View.VISIBLE
@@ -38,32 +44,32 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun initBottomNavigation() {
-        // Set default fragment
-        supportFragmentManager.beginTransaction()
-            .replace(R.id.main_frm, ScheduleFragment())  // 여기서 main_frm 사용
-            .commitAllowingStateLoss()
+        // ✅ 선택 리스너 잠시 제거 (꼼꼼하게)
+        binding.mainBnv.setOnItemSelectedListener(null)
 
-        // Handle bottom navigation item selection
+        // ✅ 가장 먼저 선택된 메뉴 명시
+        binding.mainBnv.selectedItemId = R.id.scheduleFragment
+
+        // ✅ 리스너 다시 설정
         binding.mainBnv.setOnItemSelectedListener { item ->
             when (item.itemId) {
                 R.id.scheduleFragment -> {
                     supportFragmentManager.beginTransaction()
-                        .replace(R.id.main_frm, ScheduleFragment())  // 여기서 main_frm 사용
+                        .replace(R.id.main_frm, ScheduleFragment())
                         .commitAllowingStateLoss()
                     return@setOnItemSelectedListener true
                 }
 
                 R.id.goalFragment -> {
                     supportFragmentManager.beginTransaction()
-                        .replace(R.id.main_frm, GoalFragment())  // 여기서 main_frm 사용
+                        .replace(R.id.main_frm, RankingFragment())
                         .commitAllowingStateLoss()
                     return@setOnItemSelectedListener true
                 }
 
-
                 R.id.mypageFragment -> {
                     supportFragmentManager.beginTransaction()
-                        .replace(R.id.main_frm, MypageFragment())  // 여기서 main_frm 사용
+                        .replace(R.id.main_frm, MypageFragment())
                         .commitAllowingStateLoss()
                     return@setOnItemSelectedListener true
                 }
@@ -71,4 +77,5 @@ class MainActivity : AppCompatActivity() {
             false
         }
     }
+
 }
