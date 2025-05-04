@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Base application theme -->
+    <!-- Popup theme -->
+    <style name="popupTheme" parent="Theme.MaterialComponents.Light.Dialog">
+        <!-- Customize your popup theme here. -->
+        <item name="android:windowIsFloating">true</item>
+        <item name="android:windowBackground">@android:color/white</item>
+        <item name="colorAccent">#188AFD</item>
+        <item name="android:textColorPrimary">@color/black</item>
+        <item name="android:textColorSecondary">@color/black</item>
+        <item name="android:datePickerMode">calendar</item>
+        <item name="buttonStyle">@style/MyButton</item>
+    </style>
+
+    <style name="MyButton" parent="Widget.MaterialComponents.Button">
+        <item name="android:backgroundTint">#0E9AFF</item> <!-- Set the desired button color -->
+        <item name="android:textColor">@android:color/white</item>
+    </style>
+
+
+
+    <style name="BottomSheetDialogTheme" parent="Theme.Design.Light.BottomSheetDialog">
+        <item name="bottomSheetStyle">@style/CustomBottomSheetStyle</item>
+    </style>
+
+    <style name="CustomBottomSheetStyle" parent="Widget.Design.BottomSheet.Modal">
+        <item name="android:background">@drawable/bg_bottom_sheet</item>
+    </style>
+
+
+
+
+    <style name="home_popupTheme" parent="Theme.MaterialComponents.Light.Dialog">
+        <!-- Customize your popup theme here. -->
+        <item name="android:windowIsFloating">true</item>
+        <item name="android:windowBackground">@android:color/white</item>
+        <item name="colorAccent">#188AFD</item>
+        <item name="android:textColorPrimary">@color/black</item>
+        <item name="android:textColorSecondary">@color/black</item>
+        <item name="android:datePickerMode">calendar</item>
+        <item name="buttonStyle">@style/home_MyButton</item>
+    </style>
+
+    <!-- Custom Button Style -->
+    <style name="home_MyButton" parent="Widget.MaterialComponents.Button">
+        <item name="android:backgroundTint">#0E9AFF</item> <!-- Set the desired button color -->
+        <item name="android:textColor">@android:color/white</item>
+    </style>
+
+
+
+<!--    <style name="HiddenHeaderTextAppearance" parent="TextAppearance.MaterialCalendarWidget.Header">-->
+<!--        <item name="android:textSize">0sp</item> &lt;!&ndash; 텍스트 크기를 0으로 설정 &ndash;&gt;-->
+<!--        <item name="android:visibility">gone</item> &lt;!&ndash; 헤더를 숨김 &ndash;&gt;-->
+<!--    </style>-->
+
+
+    <style name="add_gaol_CalendarWidgetHeader">
+        <item name="android:textSize">20sp</item>
+        <item name="android:textColor">@color/black</item>
+
+    </style>
+
+</resources>
