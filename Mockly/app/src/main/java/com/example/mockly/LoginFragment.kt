@@ -17,6 +17,17 @@ class LoginFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentLoginBinding.inflate(inflater, container, false)
+
+        // ✅ "게스트로 로그인" 버튼 클릭 시 메인 화면으로 전환 + 로그인 프래그먼트 제거
+        binding.googleLoginButton.setOnClickListener {
+            (activity as? MainActivity)?.apply {
+                showMainActivity()
+                supportFragmentManager.beginTransaction()
+                    .remove(this@LoginFragment)
+                    .commitAllowingStateLoss()
+            }
+        }
+
         return binding.root
     }
 

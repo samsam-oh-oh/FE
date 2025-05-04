@@ -2,13 +2,10 @@ package com.example.mockly
 
 import MypageFragment
 import RankingFragment
-import ScheduleFragment
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
-
-import com.example.mockly.R
+import com.example.mockly.ChatFragment
 import com.example.mockly.databinding.ActivityMainBinding
 
 
@@ -24,8 +21,9 @@ class MainActivity : AppCompatActivity() {
         supportActionBar?.hide() // 액션바 숨기기
 
         if (savedInstanceState == null) {
-            showMainActivity()
+            showLoginFragment()
             //showMainActivity()
+
         }
     }
 
@@ -41,7 +39,11 @@ class MainActivity : AppCompatActivity() {
     fun showMainActivity() {
         binding.mainBnv.visibility = View.VISIBLE
         initBottomNavigation()
+
+        // 백스택에서 LoginFragment 제거 (옵션)
+        supportFragmentManager.popBackStack()
     }
+
 
     private fun initBottomNavigation() {
         // ✅ 선택 리스너 잠시 제거 (꼼꼼하게)
@@ -55,7 +57,7 @@ class MainActivity : AppCompatActivity() {
             when (item.itemId) {
                 R.id.scheduleFragment -> {
                     supportFragmentManager.beginTransaction()
-                        .replace(R.id.main_frm, ScheduleFragment())
+                        .replace(R.id.main_frm, ChatFragment())
                         .commitAllowingStateLoss()
                     return@setOnItemSelectedListener true
                 }
