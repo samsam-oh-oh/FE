@@ -5,9 +5,7 @@ import RankingFragment
 import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
-import com.example.mockly.ChatFragment
 import com.example.mockly.databinding.ActivityMainBinding
-
 
 class MainActivity : AppCompatActivity() {
 
@@ -18,66 +16,70 @@ class MainActivity : AppCompatActivity() {
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        supportActionBar?.hide() // 액션바 숨기기
+        supportActionBar?.hide()
 
+        // ✅ 앱 실행 시 가장 먼저 로그인 화면 표시
         if (savedInstanceState == null) {
             showLoginFragment()
-            //showMainActivity()
-
         }
     }
 
-
+    // ✅ 로그인 화면 띄우기
     private fun showLoginFragment() {
         binding.mainBnv.visibility = View.GONE
         supportFragmentManager.beginTransaction()
-            .replace(R.id.main_frm, LoginFragment())  // ✅ 진짜 로그인 화면 띄움
+            .replace(R.id.main_frm, LoginFragment())
             .commitAllowingStateLoss()
     }
 
+    // ✅ 로그인 완료 후 호출: 인트로 화면 띄우기
+    fun showIntroFragment() {
+        binding.mainBnv.visibility = View.GONE
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.main_frm, IntroFragment())
+            .commitAllowingStateLoss()
+    }
 
+    // ✅ 인트로에서 "면접 시작" 클릭 시 메인 바텀 네비게이션 화면 띄우기
     fun showMainActivity() {
         binding.mainBnv.visibility = View.VISIBLE
         initBottomNavigation()
 
-        // 백스택에서 LoginFragment 제거 (옵션)
-        supportFragmentManager.popBackStack()
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.main_frm, ChatFragment()) // 기본 탭은 ChatFragment
+            .commitAllowingStateLoss()
     }
 
-
+    // ✅ 바텀 네비게이션 탭 설정
     private fun initBottomNavigation() {
-        // ✅ 선택 리스너 잠시 제거 (꼼꼼하게)
         binding.mainBnv.setOnItemSelectedListener(null)
-
-        // ✅ 가장 먼저 선택된 메뉴 명시
         binding.mainBnv.selectedItemId = R.id.scheduleFragment
 
-        // ✅ 리스너 다시 설정
         binding.mainBnv.setOnItemSelectedListener { item ->
             when (item.itemId) {
                 R.id.scheduleFragment -> {
                     supportFragmentManager.beginTransaction()
                         .replace(R.id.main_frm, ChatFragment())
                         .commitAllowingStateLoss()
-                    return@setOnItemSelectedListener true
+                    true
                 }
 
                 R.id.goalFragment -> {
                     supportFragmentManager.beginTransaction()
                         .replace(R.id.main_frm, RankingFragment())
                         .commitAllowingStateLoss()
-                    return@setOnItemSelectedListener true
+                    true
                 }
 
                 R.id.mypageFragment -> {
                     supportFragmentManager.beginTransaction()
                         .replace(R.id.main_frm, MypageFragment())
                         .commitAllowingStateLoss()
-                    return@setOnItemSelectedListener true
+                    true
                 }
+
+                else -> false
             }
-            false
         }
     }
-
 }

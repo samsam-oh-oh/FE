@@ -21,10 +21,10 @@ class LoginFragment : Fragment() {
     ): View {
         _binding = FragmentLoginBinding.inflate(inflater, container, false)
 
-        // ✅ "게스트로 로그인" 버튼
+        // ✅ "게스트로 로그인" 버튼 → IntroFragment로 이동
         binding.googleLoginButton.setOnClickListener {
             (activity as? MainActivity)?.apply {
-                showMainActivity()
+                showIntroFragment()  // ✅ MainActivity에서 IntroFragment 띄우기
                 supportFragmentManager.beginTransaction()
                     .remove(this@LoginFragment)
                     .commitAllowingStateLoss()
@@ -33,12 +33,10 @@ class LoginFragment : Fragment() {
 
         // ✅ "카카오 로그인" 버튼
         binding.kakaoLoginButton.setOnClickListener {
-            // 1. 카카오톡 앱 로그인 시도
             UserApiClient.instance.loginWithKakaoTalk(requireContext()) { token, error ->
                 if (error != null) {
                     Log.w("KakaoLogin", "카카오톡 로그인 실패, 웹으로 대체: ${error.message}")
 
-                    // 2. 카카오 계정(웹뷰) 로그인 fallback
                     UserApiClient.instance.loginWithKakaoAccount(requireContext()) { tokenWeb, errorWeb ->
                         if (errorWeb != null) {
                             Log.e("KakaoLogin", "카카오 계정 로그인 실패", errorWeb)
@@ -46,7 +44,7 @@ class LoginFragment : Fragment() {
                         } else if (tokenWeb != null) {
                             Log.i("KakaoLogin", "카카오 계정 로그인 성공: ${tokenWeb.accessToken}")
                             (activity as? MainActivity)?.apply {
-                                showMainActivity()
+                                showIntroFragment()  // ✅ 카카오 로그인 성공 시에도 Intro로
                                 supportFragmentManager.beginTransaction()
                                     .remove(this@LoginFragment)
                                     .commitAllowingStateLoss()
@@ -56,7 +54,7 @@ class LoginFragment : Fragment() {
                 } else if (token != null) {
                     Log.i("KakaoLogin", "카카오톡 로그인 성공: ${token.accessToken}")
                     (activity as? MainActivity)?.apply {
-                        showMainActivity()
+                        showIntroFragment()
                         supportFragmentManager.beginTransaction()
                             .remove(this@LoginFragment)
                             .commitAllowingStateLoss()
@@ -64,7 +62,6 @@ class LoginFragment : Fragment() {
                 }
             }
         }
-
 
         return binding.root
     }
