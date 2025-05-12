@@ -41,6 +41,7 @@ android {
 
 dependencies {
 
+    implementation("com.kakao.sdk:v2-user:2.15.0")
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
