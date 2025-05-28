@@ -41,6 +41,8 @@ android {
 
 dependencies {
 
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+    implementation("org.json:json:20240303")
     implementation("com.kakao.sdk:v2-user:2.12.1")
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)

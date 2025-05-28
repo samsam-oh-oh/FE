@@ -9,7 +9,7 @@ import com.example.mockly.databinding.ItemChatRecordButtonBinding
 import com.example.mockly.model.ChatMessage
 
 class ChatAdapter(
-    private val messages: List<ChatMessage>,
+    private val messages: MutableList<ChatMessage>,
     private val onRecordClick: () -> Unit // 녹음 버튼 클릭 콜백
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
@@ -66,9 +66,10 @@ class ChatAdapter(
         val binding: ItemChatRecordButtonBinding,
         val onRecordClick: () -> Unit
     ) : RecyclerView.ViewHolder(binding.root) {
+
         init {
             binding.recordButton.setOnClickListener {
-                onRecordClick()
+                onRecordClick() // 녹음 시작/중지, STT 및 다음 질문은 ChatFragment에서 처리
             }
         }
     }
