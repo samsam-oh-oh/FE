@@ -20,13 +20,16 @@ import com.example.mockly.adapter.ChatAdapter
 import com.example.mockly.api.InterviewApiService
 import com.example.mockly.databinding.FragmentChatBinding
 import com.example.mockly.model.ChatMessage
+import com.example.mockly.model.FeedbackResponse
 import com.example.mockly.model.QuestionResponse
+import com.example.mockly.model.ScoreResponse
 import com.example.mockly.util.HuggingFaceSTT
 import com.example.mockly.util.WavRecorder
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.OkHttpClient
 import okhttp3.RequestBody.Companion.asRequestBody
+import okhttp3.ResponseBody
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -68,7 +71,6 @@ class ChatFragment : Fragment() {
         binding.chatRecyclerView.layoutManager = LinearLayoutManager(requireContext())
         binding.chatRecyclerView.adapter = chatAdapter
 
-        // 💬 면접 시작 시 안내 메시지 먼저 추가
         messageList.add(ChatMessage(
             "📄 먼저 이력서 PDF를 첨부해주세요.\n첨부된 이력서를 기반으로 면접 질문을 생성합니다.",
             isUser = false
@@ -160,7 +162,6 @@ class ChatFragment : Fragment() {
         })
     }
 
-
     private fun toggleRecording() {
         if (!isRecording) {
             val filename = "response_${System.currentTimeMillis()}.wav"
@@ -181,6 +182,16 @@ class ChatFragment : Fragment() {
                         messageList.add(ChatMessage(resultText, isUser = true))
                         currentQuestionIndex++
                         showCurrentQuestion()
+
+                        if (answers.size == questions.size) {
+                            val answerText = answers.joinToString(separator = "\n\n")
+                            val fileName = "interview_answers_${System.currentTimeMillis()}.txt"
+                            val file = File(requireContext().getExternalFilesDir(null), fileName)
+                            file.writeText(answerText)
+
+                            Log.d("InterviewAPI", "📤 서버로 전송할 텍스트 파일 경로: ${file.absolutePath}")
+                            uploadAnswerTextFile(file)
+                        }
                     }
                 }
             } else {
@@ -193,26 +204,125 @@ class ChatFragment : Fragment() {
 
     private fun showCurrentQuestion() {
         Log.d("InterviewAPI", "🎯 현재 질문 인덱스: $currentQuestionIndex")
-        Log.d("InterviewAPI", "📝 현재 질문 내용: ${questions.getOrNull(currentQuestionIndex)}")
 
-        if (currentQuestionIndex < questions.size) {
-            val currentQuestion = questions[currentQuestionIndex+1]
+        val displayIndex = currentQuestionIndex
+        val currentQuestion = questions.getOrNull(displayIndex)
 
-            messageList.add(ChatMessage(currentQuestion, isUser = false))
+        Log.d("InterviewAPI", "📝 현재 질문 내용: $currentQuestion")
+
+        if (currentQuestion != null) {
+            messageList.add(ChatMessage(currentQuestion.trim(), isUser = false))
             messageList.add(ChatMessage("", isUser = false, isRecordingPrompt = true))
 
             chatAdapter.notifyDataSetChanged()
             binding.chatRecyclerView.scrollToPosition(messageList.size - 1)
         } else {
-            messageList.add(ChatMessage(
-                "✅ 고생하셨습니다. 면접이 종료되었습니다. 결과 리포트를 기다려 주세요.",
-                isUser = false
-            ))
+            messageList.add(
+                ChatMessage(
+                    "✅ 고생하셨습니다. 면접이 종료되었습니다. 결과 리포트를 기다려 주세요.",
+                    isUser = false
+                )
+            )
             chatAdapter.notifyDataSetChanged()
             binding.chatRecyclerView.scrollToPosition(messageList.size - 1)
         }
     }
 
+    private fun uploadAnswerTextFile(file: File) {
+        val retrofit = Retrofit.Builder()
+            .baseUrl("http://13.209.230.38/")
+            .client(OkHttpClient.Builder()
+                .connectTimeout(120, TimeUnit.SECONDS)
+                .writeTimeout(120, TimeUnit.SECONDS)
+                .readTimeout(120, TimeUnit.SECONDS)
+                .build())
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+
+        val api = retrofit.create(InterviewApiService::class.java)
+        val requestFile = file.asRequestBody("text/plain".toMediaTypeOrNull())
+        val body = MultipartBody.Part.createFormData("STT_file", file.name, requestFile)
+
+        api.uploadAnswerText(body).enqueue(object : Callback<ResponseBody> {
+            override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
+                if (response.isSuccessful) {
+                    Toast.makeText(requireContext(), "✅ 답변 텍스트 전송 완료", Toast.LENGTH_SHORT).show()
+                    Log.d("InterviewAPI", "✅ 서버 응답: ${response.body()?.string()}")
+                    fetchFeedbackFromServer() // ✅ 전송 완료 후 피드백 호출
+                } else {
+                    Log.e("InterviewAPI", "❌ 응답 실패: ${response.code()}")
+                }
+            }
+
+            override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
+                Log.e("InterviewAPI", "❌ 전송 실패: ${t.localizedMessage}", t)
+            }
+        })
+    }
+
+    private fun fetchFeedbackFromServer() {
+        val retrofit = Retrofit.Builder()
+            .baseUrl("http://13.209.230.38/")
+            .client(OkHttpClient.Builder().build())
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+
+        val api = retrofit.create(InterviewApiService::class.java)
+
+        api.getFeedbacks().enqueue(object : Callback<FeedbackResponse> {
+            override fun onResponse(call: Call<FeedbackResponse>, response: Response<FeedbackResponse>) {
+                if (response.isSuccessful) {
+                    val feedbacks = response.body()?.feedbackList.orEmpty()
+                    feedbacks.forEach { feedback ->
+                        messageList.add(ChatMessage("🧠 피드백: $feedback", isUser = false))
+                    }
+                    chatAdapter.notifyDataSetChanged()
+                    binding.chatRecyclerView.scrollToPosition(messageList.size - 1)
+                    Log.d("InterviewAPI", "✅ 피드백 수신 완료: $feedbacks")
+
+                    // ✅ 여기서 점수까지 이어서 받기
+                    fetchScoresFromServer()
+                } else {
+                    Log.e("InterviewAPI", "❌ 피드백 응답 실패: ${response.code()}")
+                }
+            }
+
+            override fun onFailure(call: Call<FeedbackResponse>, t: Throwable) {
+                Log.e("InterviewAPI", "❌ 피드백 요청 실패: ${t.message}", t)
+            }
+        })
+    }
+    private fun fetchScoresFromServer() {
+        val retrofit = Retrofit.Builder()
+            .baseUrl("http://13.209.230.38/")
+            .client(OkHttpClient.Builder().build())
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+
+        val api = retrofit.create(InterviewApiService::class.java)
+
+        api.getScores().enqueue(object : Callback<ScoreResponse> {
+            override fun onResponse(call: Call<ScoreResponse>, response: Response<ScoreResponse>) {
+                if (response.isSuccessful) {
+                    val scoreMap = response.body()?.scoreMap.orEmpty()
+                    val scoreText = scoreMap.entries.joinToString("\n") { "${it.key}: ${it.value}점" }
+
+                    messageList.add(
+                        ChatMessage("📊 면접 점수 결과입니다:\n$scoreText", isUser = false)
+                    )
+                    chatAdapter.notifyDataSetChanged()
+                    binding.chatRecyclerView.scrollToPosition(messageList.size - 1)
+                    Log.d("InterviewAPI", "✅ 점수 수신 완료: $scoreText")
+                } else {
+                    Log.e("InterviewAPI", "❌ 점수 응답 실패: ${response.code()}")
+                }
+            }
+
+            override fun onFailure(call: Call<ScoreResponse>, t: Throwable) {
+                Log.e("InterviewAPI", "❌ 점수 요청 실패: ${t.message}", t)
+            }
+        })
+    }
 
     private fun checkAudioPermission() {
         if (ContextCompat.checkSelfPermission(

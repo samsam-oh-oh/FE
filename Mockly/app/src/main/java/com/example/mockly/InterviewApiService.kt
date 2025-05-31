@@ -1,9 +1,11 @@
 package com.example.mockly.api
 
-import com.example.mockly.model.EvaluationRequest
-import com.example.mockly.model.EvaluationResponse
+
+import com.example.mockly.model.FeedbackResponse
 import com.example.mockly.model.QuestionResponse
+import com.example.mockly.model.ScoreResponse
 import okhttp3.MultipartBody
+import okhttp3.ResponseBody
 import retrofit2.Call
 import retrofit2.http.*
 
@@ -20,11 +22,19 @@ interface InterviewApiService {
     @GET("llm/questions")
     fun getQuestions(): Call<QuestionResponse>
 
+    @Multipart
+    @POST("llm/upload/qa")
+    fun uploadAnswerText(
+        @Part STT_file: MultipartBody.Part
+    ): Call<ResponseBody>  // 성공 여부만 받는 경우
+
+    @GET("llm/feedbacks")
+    fun getFeedbacks(): Call<FeedbackResponse>
+
+    @GET("/llm/scores")
+    fun getScores(): Call<ScoreResponse>  // ✅ 올바른 타입
 
 
-    // ✅ 3. 답변 평가 API
-    @POST("interview/evaluate")
-    fun evaluateAnswers(
-        @Body request: EvaluationRequest
-    ): Call<EvaluationResponse>
+
+
 }
