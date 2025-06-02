@@ -25,6 +25,14 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
+        <!-- 📎 PDF 첨부 버튼 -->
+        <Button
+            android:id="@+id/uploadPdfButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="📎 첨부" />
+
+        <!-- 텍스트 입력 -->
         <EditText
             android:id="@+id/messageInput"
             android:layout_weight="1"
@@ -32,10 +40,12 @@
             android:layout_height="wrap_content"
             android:hint="메시지를 입력하세요" />
 
+        <!-- 전송 버튼 -->
         <Button
             android:id="@+id/sendButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="전송" />
     </LinearLayout>
+
 </androidx.constraintlayout.widget.ConstraintLayout>
