@@ -73,6 +73,7 @@
                     android:textSize="14sp" />
 
                 <TextView
+                    android:id="@+id/mypagePoints"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="50,000 P"
@@ -132,6 +133,7 @@
                 android:text="최고 기록"/>
 
             <LinearLayout
+                android:id="@+id/bestRecord"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
@@ -141,26 +143,8 @@
                 android:gravity="center_vertical"
                 android:background="@drawable/item_background">
 
-                <FrameLayout
-                    android:layout_width="36dp"
-                    android:layout_height="36dp">
 
-                    <ImageView
-                        android:id="@+id/rankImage"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:visibility="gone" />
 
-                    <TextView
-                        android:id="@+id/rankText"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:gravity="center"
-                        android:text="4"
-                        android:textColor="#000000"
-                        android:textSize="16sp"
-                        android:textStyle="bold" />
-                </FrameLayout>
 
                 <TextView
                     android:id="@+id/nameText"

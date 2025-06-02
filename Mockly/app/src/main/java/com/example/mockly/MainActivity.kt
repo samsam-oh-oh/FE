@@ -1,6 +1,6 @@
 package com.example.mockly
 
-import MypageFragment
+import com.example.mockly.MypageFragment
 import RankingFragment
 import android.os.Bundle
 import android.view.View
@@ -49,6 +49,7 @@ class MainActivity : AppCompatActivity() {
             .replace(R.id.main_frm, ChatFragment()) // 기본 탭은 ChatFragment
             .commitAllowingStateLoss()
     }
+
 
     // ✅ 바텀 네비게이션 탭 설정
     private fun initBottomNavigation() {
