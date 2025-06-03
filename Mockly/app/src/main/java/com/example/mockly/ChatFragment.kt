@@ -23,7 +23,7 @@ import com.example.mockly.model.ChatMessage
 import com.example.mockly.model.FeedbackResponse
 import com.example.mockly.model.QuestionResponse
 import com.example.mockly.model.ScoreResponse
-import com.example.mockly.util.HuggingFaceSTT
+import com.example.mockly.util.CustomSTT
 import com.example.mockly.util.WavRecorder
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
@@ -176,7 +176,7 @@ class ChatFragment : Fragment() {
             messageList.removeAll { it.isRecordingPrompt }
 
             if (wavFile != null && wavFile.exists()) {
-                HuggingFaceSTT.sendAudioToHF(wavFile) { resultText ->
+                CustomSTT.sendAudioToCustomSTT(wavFile) { resultText ->
                     activity?.runOnUiThread {
                         answers.add(resultText)
                         messageList.add(ChatMessage(resultText, isUser = true))
@@ -269,10 +269,20 @@ class ChatFragment : Fragment() {
 
         val api = retrofit.create(InterviewApiService::class.java)
 
-        api.getFeedbacks().enqueue(object : Callback<FeedbackResponse> {
+        val memberParams = mapOf(
+            "createdAt" to "2025-06-03T16:34:59.345.093Z",
+            "updatedAt" to "2025-06-03T16:34:59.345.093Z",
+            "id" to "0",
+            "kakaoId" to "string",
+            "nickname" to "string",
+            "profileImage" to "string",
+            "maxScore" to "0"
+        )
+
+        api.getFeedbacks(memberParams).enqueue(object : Callback<FeedbackResponse> {
             override fun onResponse(call: Call<FeedbackResponse>, response: Response<FeedbackResponse>) {
                 if (response.isSuccessful) {
-                    val feedbacks = response.body()?.feedbackList.orEmpty()
+                    val feedbacks = response.body()?.data?.feedbackList.orEmpty()
                     feedbacks.forEach { feedback ->
                         messageList.add(ChatMessage("🧠 피드백: $feedback", isUser = false))
                     }
@@ -280,7 +290,7 @@ class ChatFragment : Fragment() {
                     binding.chatRecyclerView.scrollToPosition(messageList.size - 1)
                     Log.d("InterviewAPI", "✅ 피드백 수신 완료: $feedbacks")
 
-                    // ✅ 여기서 점수까지 이어서 받기
+                    // ✅ 점수 이어서 받기
                     fetchScoresFromServer()
                 } else {
                     Log.e("InterviewAPI", "❌ 피드백 응답 실패: ${response.code()}")
@@ -292,6 +302,8 @@ class ChatFragment : Fragment() {
             }
         })
     }
+
+
     private fun fetchScoresFromServer() {
         val retrofit = Retrofit.Builder()
             .baseUrl("http://13.209.230.38/")
@@ -304,7 +316,7 @@ class ChatFragment : Fragment() {
         api.getScores().enqueue(object : Callback<ScoreResponse> {
             override fun onResponse(call: Call<ScoreResponse>, response: Response<ScoreResponse>) {
                 if (response.isSuccessful) {
-                    val scoreMap = response.body()?.scoreMap.orEmpty()
+                    val scoreMap = response.body()?.data?.scoreMap.orEmpty()  // ✅ 여기 수정됨
                     val scoreText = scoreMap.entries.joinToString("\n") { "${it.key}: ${it.value}점" }
 
                     messageList.add(
@@ -323,6 +335,7 @@ class ChatFragment : Fragment() {
             }
         })
     }
+
 
     private fun checkAudioPermission() {
         if (ContextCompat.checkSelfPermission(

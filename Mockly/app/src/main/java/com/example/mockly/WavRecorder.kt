@@ -13,7 +13,7 @@ import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
 class WavRecorder(
-    private val fileName: String,
+    fileName: String,
     private val appContext: android.content.Context
 ) {
 
@@ -27,6 +27,9 @@ class WavRecorder(
     private lateinit var outputFile: File
     private lateinit var rawFile: File
 
+    // ✅ 확장자 중복 방지를 위해 .wav 제거
+    private val safeFileName = fileName.removeSuffix(".wav")
+
     fun startRecording() {
         if (ContextCompat.checkSelfPermission(appContext, Manifest.permission.RECORD_AUDIO)
             != PackageManager.PERMISSION_GRANTED
@@ -37,8 +40,8 @@ class WavRecorder(
 
         val dir = appContext.getExternalFilesDir(Environment.DIRECTORY_MUSIC)
         if (dir != null && !dir.exists()) dir.mkdirs()
-        outputFile = File(dir, "$fileName.wav")
-        rawFile = File(dir, "$fileName.raw")
+        outputFile = File(dir, "$safeFileName.wav")
+        rawFile = File(dir, "$safeFileName.raw")
 
         try {
             audioRecord = AudioRecord.Builder()
@@ -106,12 +109,12 @@ class WavRecorder(
             header.put("WAVE".toByteArray())
             header.put("fmt ".toByteArray())
             header.putInt(16)
-            header.putShort(1)
-            header.putShort(1)
+            header.putShort(1) // PCM
+            header.putShort(1) // mono
             header.putInt(sampleRate)
             header.putInt(byteRate)
-            header.putShort(2)
-            header.putShort(16)
+            header.putShort(2) // block align
+            header.putShort(16) // bits per sample
             header.put("data".toByteArray())
             header.putInt(rawData.size)
 

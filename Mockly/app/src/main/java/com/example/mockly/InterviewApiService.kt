@@ -29,7 +29,8 @@ interface InterviewApiService {
     ): Call<ResponseBody>  // 성공 여부만 받는 경우
 
     @GET("llm/feedbacks")
-    fun getFeedbacks(): Call<FeedbackResponse>
+    fun getFeedbacks(@QueryMap memberOpt: Map<String, String>): Call<FeedbackResponse>
+
 
     @GET("/llm/scores")
     fun getScores(): Call<ScoreResponse>  // ✅ 올바른 타입
