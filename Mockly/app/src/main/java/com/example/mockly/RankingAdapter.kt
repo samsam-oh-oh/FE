@@ -23,6 +23,7 @@ class RankingAdapter(private val items: List<RankingItem>) :
         val scoreText: TextView = itemView.findViewById(R.id.scoreText)
         val detailLayout: LinearLayout = itemView.findViewById(R.id.detailLayout)
         val btnPoint: Button = itemView.findViewById(R.id.btnPoint)
+        val tvPointLabel: TextView = itemView.findViewById(R.id.tvPointLabel) // ✅ 포인트 라벨 참조
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RankingViewHolder {
@@ -36,6 +37,7 @@ class RankingAdapter(private val items: List<RankingItem>) :
         holder.nameText.text = item.nickname
         holder.scoreText.text = item.maxScore.toString()
 
+        // ✅ rank에 따른 이미지 처리
         when (item.rank) {
             1 -> {
                 holder.rankImage.setImageResource(R.drawable.first_ranking)
@@ -59,41 +61,45 @@ class RankingAdapter(private val items: List<RankingItem>) :
             }
         }
 
+        // ✅ tvPointLabel에는 SharedPreferences에서 가져온 포인트 출력
+        holder.tvPointLabel.text = "보유 포인트: ${item.userPoint}pt"
+
+        // ✅ 버튼 텍스트는 고정 10pt
+        holder.btnPoint.text = "10pt"
+
         holder.itemView.setOnClickListener {
             val visible = if (holder.detailLayout.visibility == View.VISIBLE) View.GONE else View.VISIBLE
             holder.detailLayout.visibility = visible
         }
 
         holder.btnPoint.setOnClickListener {
-            showFeedbackDialog(holder.itemView.context, item.feedback)
+            showFeedbackDialog(holder.itemView.context, item.feedback, item.maxScore)
         }
     }
 
     override fun getItemCount() = items.size
 
-    private fun showFeedbackDialog(context: Context, feedbackText: String) {
+    private fun showFeedbackDialog(context: Context, feedbackText: String, score: Double) {
         val dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_feedback_popup, null)
         val dialog = AlertDialog.Builder(context).setView(dialogView).create()
 
         val tvContent = dialogView.findViewById<TextView>(R.id.tvFeedbackContent)
         val btnClose = dialogView.findViewById<Button>(R.id.btnCloseDialog)
 
-        btnClose.setOnClickListener {
-            dialog.dismiss()
-        }
-
+        btnClose.setOnClickListener { dialog.dismiss() }
 
         val formatted = formatFeedbackText(feedbackText)
-        tvContent.text = formatted
+        val displayText = "📊 종합 점수: ${score}점\n\n$formatted"
+        tvContent.text = displayText
+
         dialog.show()
     }
+
     fun formatFeedbackText(raw: String): String {
         return raw
-            // ✅ ".숫자." → 숫자 앞에서 줄바꿈
-            .replace(Regex("\\.(?=\\d+\\.)"), ".\n")
-
-            // ✅ "-" 기호 앞에서 줄바꿈 (공백 포함)
-            .replace(Regex("(?=\\s*-\\s*)"), "\n")
+            .replace(Regex("\\.(?=\\d+\\.)"), ".\n")      // .숫자. 줄바꿈
+            .replace(Regex("(?=\\s*-\\s*)"), "\n")        // - 앞 줄바꿈
+            .replace(Regex("(?=\\[)"), "\n\n")            // [ 앞 줄바꿈
     }
-
 }
+

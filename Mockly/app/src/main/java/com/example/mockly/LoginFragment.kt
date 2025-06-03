@@ -72,12 +72,7 @@ class LoginFragment : Fragment() {
 
     private fun guestLogin() {
         val adminCode = "b91c260571b524bf1e433c81cdc05d9d68bcbc2bd32b63124ab11ebf1cf8cf4d"
-
-        val bodyJson = JSONObject().apply {
-            put("adminCode", adminCode)  // ✅ 정확한 key 이름 사용
-        }
-
-        Log.d("GuestLogin", "요청 JSON: $bodyJson")
+        val bodyJson = JSONObject().apply { put("adminCode", adminCode) }
 
         val requestBody = bodyJson.toString().toRequestBody("application/json".toMediaType())
         val request = Request.Builder()
@@ -88,46 +83,61 @@ class LoginFragment : Fragment() {
         client.newCall(request).enqueue(object : Callback {
             override fun onResponse(call: Call, response: Response) {
                 val responseBody = response.body?.string() ?: ""
-                Log.d("GuestLogin", "서버 응답: $responseBody")
+                val json = JSONObject(responseBody)
+                val data = json.optJSONObject("data")
+                val token = data?.optString("accessToken") ?: ""
 
-                try {
-                    val json = JSONObject(responseBody)
-                    val data = json.optJSONObject("data")
-                    val token = data?.optString("accessToken") ?: ""
+                if (token.isNotEmpty()) {
+                    // 🔹 1단계: 토큰 저장
+                    val prefs = requireActivity().getSharedPreferences("mockly_prefs", Context.MODE_PRIVATE)
+                    prefs.edit().putString("token", token).commit()
 
-                    activity?.runOnUiThread {
-                        if (token.isNotEmpty()) {
-                            val prefs = requireActivity().getSharedPreferences("mockly_prefs", Context.MODE_PRIVATE)
-                            prefs.edit().putString("token", token).apply()
+                    // 🔹 2단계: 포인트 가져오기 API 호출
+                    getUserPoint(token) {
+                        activity?.runOnUiThread {
                             Toast.makeText(requireContext(), "✅ 로그인 성공", Toast.LENGTH_SHORT).show()
                             goToIntro()
-                        } else {
-                            Toast.makeText(requireContext(), "❌ 로그인 실패 (토큰 없음)", Toast.LENGTH_SHORT).show()
                         }
                     }
-                } catch (e: Exception) {
-                    Log.e("GuestLogin", "JSON 파싱 오류", e)
+                } else {
                     activity?.runOnUiThread {
-                        Toast.makeText(requireContext(), "❌ 응답 파싱 실패", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(requireContext(), "❌ 로그인 실패 (토큰 없음)", Toast.LENGTH_SHORT).show()
                     }
                 }
             }
 
             override fun onFailure(call: Call, e: IOException) {
                 Log.e("GuestLogin", "❌ 서버 연결 실패", e)
-                activity?.runOnUiThread {
-                    Toast.makeText(requireContext(), "❌ 서버 연결 실패", Toast.LENGTH_SHORT).show()
-                }
             }
         })
     }
+    private fun getUserPoint(token: String, onComplete: () -> Unit) {
+        val pointRequest = Request.Builder()
+            .url("http://13.209.230.38/points/me")
+            .addHeader("Authorization", "Bearer $token")
+            .get()
+            .build()
 
+        client.newCall(pointRequest).enqueue(object : Callback {
+            override fun onResponse(call: Call, response: Response) {
+                val responseBody = response.body?.string() ?: ""
+                val json = JSONObject(responseBody)
+                val point = json.optInt("pointAmount", 0)
 
+                Log.d("PointFetch", "✅ 받은 포인트: $point")
 
+                val prefs = requireActivity().getSharedPreferences("mockly_prefs", Context.MODE_PRIVATE)
+                prefs.edit().putInt("point", point).apply()
 
+                onComplete()
+            }
 
-
-
+            override fun onFailure(call: Call, e: IOException) {
+                Log.e("PointFetch", "❌ 포인트 불러오기 실패", e)
+                onComplete()
+            }
+        })
+    }
 
 
     private fun goToIntro() {
