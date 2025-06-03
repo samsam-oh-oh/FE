@@ -42,7 +42,8 @@ class RankingFragment : Fragment() {
     private fun loadRankingFromServer() {
         val prefs = requireContext().getSharedPreferences("mockly_prefs", Context.MODE_PRIVATE)
         val token = prefs.getString("token", "") ?: return
-
+        val pointAmount = prefs.getInt("point", -999)
+        Log.d("PointDebug", "✅ 불러온 포인트: $pointAmount")
         val client = OkHttpClient()
         val request = Request.Builder()
             .url("http://13.209.230.38/scores/rank")
@@ -57,6 +58,11 @@ class RankingFragment : Fragment() {
                 val json = JSONObject(jsonString)
                 val dataArray = json.optJSONArray("data") ?: return
 
+                // ✅ SharedPreferences 포인트는 여기서 가져와야 정확함
+                val pointAmount = requireContext()
+                    .getSharedPreferences("mockly_prefs", Context.MODE_PRIVATE)
+                    .getInt("point", 0)
+
                 val result = mutableListOf<RankingItem>()
                 for (i in 0 until dataArray.length()) {
                     val obj = dataArray.getJSONObject(i)
@@ -70,7 +76,8 @@ class RankingFragment : Fragment() {
                             rank = i + 1,
                             nickname = nickname,
                             maxScore = maxScore,
-                            feedback = feedback
+                            feedback = feedback,
+                            userPoint = pointAmount  // ✅ 정확히 30으로 나올 것
                         )
                     )
                 }
