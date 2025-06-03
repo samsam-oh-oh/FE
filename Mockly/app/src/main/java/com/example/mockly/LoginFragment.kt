@@ -9,14 +9,12 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.example.mockly.databinding.FragmentLoginBinding
 import com.kakao.sdk.user.UserApiClient
-import okhttp3.OkHttpClient
-import android.content.Context
 import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONObject
+import android.content.Context
 import java.io.IOException
-
 
 class LoginFragment : Fragment() {
 
@@ -30,13 +28,11 @@ class LoginFragment : Fragment() {
     ): View {
         _binding = FragmentLoginBinding.inflate(inflater, container, false)
 
-        // ✅ 게스트 로그인 → IntroFragment
         binding.googleLoginButton.setOnClickListener {
             Toast.makeText(requireContext(), "게스트 로그인 시도 중...", Toast.LENGTH_SHORT).show()
             guestLogin()
         }
 
-        // ✅ 카카오 로그인 버튼
         binding.kakaoLoginButton.setOnClickListener {
             kakaoLogin()
         }
@@ -51,8 +47,8 @@ class LoginFragment : Fragment() {
                     Log.e("KakaoLogin", "카카오톡 로그인 실패: ${error.message}")
                     loginWithKakaoAccount()
                 } else if (token != null) {
-                    Log.i("KakaoLogin", "카카오톡 로그인 성공: ${token.accessToken}")
-                    goToIntro()
+                    Log.d("KakaoToken", "✅ idToken: ${token.idToken}")
+                    sendKakaoTokenToServer(token.idToken ?: "")
                 }
             }
         } else {
@@ -65,9 +61,84 @@ class LoginFragment : Fragment() {
             if (error != null) {
                 Toast.makeText(requireContext(), "카카오 계정 로그인 실패", Toast.LENGTH_SHORT).show()
             } else if (token != null) {
-                goToIntro()
+                Log.d("KakaoToken", "✅ idToken: ${token.idToken}")
+                sendKakaoTokenToServer(token.idToken ?: "")
             }
         }
+    }
+
+    private fun sendKakaoTokenToServer(idToken: String) {
+        Log.d("LoginDebug", "🟡 전송할 idToken: $idToken")
+
+        val bodyJson = JSONObject().apply {
+            put("idToken", idToken)
+        }
+
+        val requestBody = bodyJson.toString().toRequestBody("application/json".toMediaType())
+        val request = Request.Builder()
+            .url("http://13.209.230.38/auth/login")
+            .post(requestBody)
+            .build()
+
+        client.newCall(request).enqueue(object : Callback {
+            override fun onResponse(call: Call, response: Response) {
+                val responseCode = response.code
+                val responseBody = response.body?.string() ?: ""
+
+                Log.d("LoginDebug", "🟢 HTTP 응답 코드: $responseCode")
+                Log.d("LoginDebug", "📦 응답 본문: $responseBody")
+
+                if (responseCode != 200) {
+                    activity?.runOnUiThread {
+                        Toast.makeText(requireContext(), "❌ 로그인 실패 (HTTP $responseCode)", Toast.LENGTH_SHORT).show()
+                    }
+                    return
+                }
+
+                try {
+                    val json = JSONObject(responseBody)
+                    val data = json.optJSONObject("data") ?: JSONObject()
+
+                    val accessToken = data.optString("accessToken", "")
+                    val refreshToken = data.optString("refreshToken", "")
+                    val isNewMember = data.optBoolean("newMember", false)
+
+                    Log.d("LoginDebug", "🟢 accessToken: $accessToken")
+                    Log.d("LoginDebug", "🟢 isNewMember: $isNewMember")
+
+                    if (accessToken.isNotEmpty()) {
+                        val prefs = requireActivity().getSharedPreferences("mockly_prefs", Context.MODE_PRIVATE)
+                        prefs.edit()
+                            .putString("token", accessToken)
+                            .putString("refreshToken", refreshToken)
+                            .apply()
+
+                        activity?.runOnUiThread {
+                            Toast.makeText(requireContext(), "✅ 로그인 성공", Toast.LENGTH_SHORT).show()
+                            if (isNewMember) {
+                                (activity as? MainActivity)?.showNicknameFragment()
+                            } else {
+                                (activity as? MainActivity)?.showIntroFragment()
+                            }
+                        }
+                    } else {
+                        Log.e("LoginResponse", "⚠️ accessToken이 비어 있음")
+                        activity?.runOnUiThread {
+                            Toast.makeText(requireContext(), "❌ 로그인 실패 (토큰 없음)", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                } catch (e: Exception) {
+                    Log.e("LoginResponse", "❌ JSON 파싱 오류", e)
+                    activity?.runOnUiThread {
+                        Toast.makeText(requireContext(), "❌ 로그인 실패 (응답 파싱 오류)", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+
+            override fun onFailure(call: Call, e: IOException) {
+                Log.e("KakaoLogin", "❌ 서버 요청 실패", e)
+            }
+        })
     }
 
     private fun guestLogin() {
@@ -84,15 +155,12 @@ class LoginFragment : Fragment() {
             override fun onResponse(call: Call, response: Response) {
                 val responseBody = response.body?.string() ?: ""
                 val json = JSONObject(responseBody)
-                val data = json.optJSONObject("data")
-                val token = data?.optString("accessToken") ?: ""
+                val token = json.optJSONObject("data")?.optString("accessToken") ?: ""
 
                 if (token.isNotEmpty()) {
-                    // 🔹 1단계: 토큰 저장
                     val prefs = requireActivity().getSharedPreferences("mockly_prefs", Context.MODE_PRIVATE)
                     prefs.edit().putString("token", token).commit()
 
-                    // 🔹 2단계: 포인트 가져오기 API 호출
                     getUserPoint(token) {
                         activity?.runOnUiThread {
                             Toast.makeText(requireContext(), "✅ 로그인 성공", Toast.LENGTH_SHORT).show()
@@ -111,6 +179,7 @@ class LoginFragment : Fragment() {
             }
         })
     }
+
     private fun getUserPoint(token: String, onComplete: () -> Unit) {
         val pointRequest = Request.Builder()
             .url("http://13.209.230.38/points/me")
@@ -121,8 +190,7 @@ class LoginFragment : Fragment() {
         client.newCall(pointRequest).enqueue(object : Callback {
             override fun onResponse(call: Call, response: Response) {
                 val responseBody = response.body?.string() ?: ""
-                val json = JSONObject(responseBody)
-                val point = json.optInt("pointAmount", 0)
+                val point = JSONObject(responseBody).optInt("pointAmount", 0)
 
                 Log.d("PointFetch", "✅ 받은 포인트: $point")
 
@@ -138,7 +206,6 @@ class LoginFragment : Fragment() {
             }
         })
     }
-
 
     private fun goToIntro() {
         if (!isAdded || activity == null) return

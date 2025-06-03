@@ -32,13 +32,9 @@ class MainActivity : AppCompatActivity() {
             .commitAllowingStateLoss()
     }
 
-    // ✅ 로그인 완료 후 호출: 인트로 화면 띄우기
-    fun showIntroFragment() {
-        binding.mainBnv.visibility = View.GONE
-        supportFragmentManager.beginTransaction()
-            .replace(R.id.main_frm, IntroFragment())
-            .commitAllowingStateLoss()
-    }
+
+
+
 
     // ✅ 인트로에서 "면접 시작" 클릭 시 메인 바텀 네비게이션 화면 띄우기
     fun showMainActivity() {
@@ -49,6 +45,20 @@ class MainActivity : AppCompatActivity() {
             .replace(R.id.main_frm, ChatFragment()) // 기본 탭은 ChatFragment
             .commitAllowingStateLoss()
     }
+    fun showNicknameFragment() {
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.main_frm, NicknameFragment())  // ← 수정 완료
+            .addToBackStack(null)
+            .commit()
+    }
+
+    fun showIntroFragment() {
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.main_frm, IntroFragment())  // ← 수정 완료
+            .commit()
+    }
+
+
 
 
     // ✅ 바텀 네비게이션 탭 설정

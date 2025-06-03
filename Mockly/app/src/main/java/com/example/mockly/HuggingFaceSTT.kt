@@ -2,6 +2,7 @@ package com.example.mockly.util
 
 import android.util.Log
 import com.example.mockly.BuildConfig
+import com.example.mockly.BuildConfig.HF_API_TOKEN
 import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody.Companion.asRequestBody
@@ -34,7 +35,7 @@ object HuggingFaceSTT {
 
         val request = Request.Builder()
             .url("https://yi0xv2xd2ecifua7.us-east-1.aws.endpoints.huggingface.cloud") // ✅ Inference API Endpoint
-            .addHeader("Authorization", "Bearer ${BuildConfig.HF_API_TOKEN}")
+            .addHeader("Authorization", "")
             .addHeader("Content-Type", "audio/wav")
             .post(requestBody)
             .build()
