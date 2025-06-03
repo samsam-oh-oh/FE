@@ -120,11 +120,18 @@ class LoginFragment : Fragment() {
 
         client.newCall(pointRequest).enqueue(object : Callback {
             override fun onResponse(call: Call, response: Response) {
-                val responseBody = response.body?.string() ?: ""
-                val json = JSONObject(responseBody)
-                val point = json.optInt("pointAmount", 0)
+                val responseBody = response.body?.string()?.trim() ?: ""
+                Log.d("PointFetch", "✅ 원시 응답: $responseBody")
 
-                Log.d("PointFetch", "✅ 받은 포인트: $point")
+                val point = try {
+                    val json = JSONObject(responseBody)
+                    json.optInt("data", 0)  // ✅ "data" 필드에 들어있는 포인트만 파싱
+                } catch (e: Exception) {
+                    Log.e("PointFetch", "❌ 정수 추출 실패", e)
+                    0
+                }
+
+                Log.d("PointFetch", "✅ 최종 포인트: $point")
 
                 val prefs = requireActivity().getSharedPreferences("mockly_prefs", Context.MODE_PRIVATE)
                 prefs.edit().putInt("point", point).apply()
