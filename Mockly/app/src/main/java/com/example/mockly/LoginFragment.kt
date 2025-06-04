@@ -215,7 +215,7 @@ class LoginFragment : Fragment() {
         })
     }
 
-    
+
 
     private fun goToIntro() {
         if (!isAdded || activity == null) return

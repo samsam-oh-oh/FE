@@ -14,7 +14,15 @@ import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONObject
 import java.io.IOException
-
+import android.graphics.Color
+import android.widget.Button
+import android.widget.TextView
+import com.github.mikephil.charting.charts.BarChart
+import com.github.mikephil.charting.components.XAxis
+import com.github.mikephil.charting.data.BarData
+import com.github.mikephil.charting.data.BarDataSet
+import com.github.mikephil.charting.data.BarEntry
+import com.github.mikephil.charting.formatter.IndexAxisValueFormatter
 class RankingAdapter(private val items: List<RankingItem>) :
     RecyclerView.Adapter<RankingAdapter.RankingViewHolder>() {
 
@@ -39,7 +47,7 @@ class RankingAdapter(private val items: List<RankingItem>) :
         val item = items[position]
 
         holder.nameText.text = item.nickname
-        holder.scoreText.text = item.maxScore.toString()
+        holder.scoreText.text = item.totalScore.toString()
 
         when (item.rank) {
             1 -> {
@@ -85,8 +93,13 @@ class RankingAdapter(private val items: List<RankingItem>) :
                 // ✅ SharedPreferences 값 갱신 후 UI도 즉시 반영
                 (holder.itemView.context as? Activity)?.runOnUiThread {
                     holder.tvPointLabel.text = "보유 포인트: ${newPoint}pt"
-                    showFeedbackDialog(holder.itemView.context, item.feedback, item.maxScore)
-                }
+                    showFeedbackDialog(
+                        holder.itemView.context,
+                        item.feedback,
+                        item.totalScore,
+                        item.techScore,
+                        item.communicateScore
+                    )                }
             }
         }
     }
@@ -127,20 +140,88 @@ class RankingAdapter(private val items: List<RankingItem>) :
         })
     }
 
-    private fun showFeedbackDialog(context: Context, feedbackText: String, score: Double) {
+    private fun showFeedbackDialog(
+        context: Context,
+        feedbackText: String,
+        totalScore: Double,
+        techScore: Double,
+        communicateScore: Double
+    ) {
         val dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_feedback_popup, null)
         val dialog = AlertDialog.Builder(context).setView(dialogView).create()
 
         val tvContent = dialogView.findViewById<TextView>(R.id.tvFeedbackContent)
         val btnClose = dialogView.findViewById<Button>(R.id.btnCloseDialog)
+        val barChart = dialogView.findViewById<BarChart>(R.id.barChart)
 
         btnClose.setOnClickListener { dialog.dismiss() }
 
+        // ✅ 막대그래프 데이터
+        val entries = listOf(
+            BarEntry(0f, techScore.toFloat()),           // index 0 → 아래쪽 막대
+            BarEntry(1f, communicateScore.toFloat())     // index 1 → 위쪽 막대
+        )
+        val labels = listOf("기술부분", "소통부분")
+
+
+        val dataSet = BarDataSet(entries, "").apply {
+            valueTextSize = 14f
+            setDrawValues(true)
+            colors = listOf(
+                Color.parseColor("#E91E63"), // 기술: 핑크
+                Color.parseColor("#2196F3")  // 소통: 파랑
+            )
+        }
+
+        barChart.data = BarData(dataSet).apply {
+            barWidth = 0.6f
+        }
+
+        // X축 = 점수 축
+        val xAxis = barChart.xAxis
+        xAxis.valueFormatter = IndexAxisValueFormatter(listOf("기술부분", "소통부분"))
+        xAxis.position = XAxis.XAxisPosition.BOTTOM
+        xAxis.setDrawGridLines(false)
+        xAxis.granularity = 1f
+        xAxis.textSize = 14f
+        xAxis.labelCount = 2
+
+// Y축 = 점수값 (세로)
+        barChart.axisLeft.apply {
+            axisMinimum = 0f
+            axisMaximum = 100f
+            granularity = 10f
+            textSize = 12f
+            setDrawGridLines(true)
+        }
+        barChart.axisRight.isEnabled = false
+
+        barChart.setExtraOffsets(10f, 10f, 10f, 24f)
+
+        // 기타 스타일
+        barChart.setFitBars(true)
+        barChart.setScaleEnabled(false)
+        barChart.setTouchEnabled(false)
+        barChart.description.isEnabled = false
+        barChart.legend.isEnabled = false
+        barChart.animateX(800)
+        barChart.invalidate()
+
+        // 텍스트 구성
         val formatted = formatFeedbackText(feedbackText)
-        val displayText = "📊 종합 점수: ${score}점\n\n$formatted"
+        val displayText = """
+        🧠 전문성 및 문제 해결력: ${"%.1f".format(techScore)}점
+        🗣️ 표현력 및 커뮤니케이션 역량: ${"%.1f".format(communicateScore)}점
+        
+        📊 종합 점수: ${"%.1f".format(totalScore)}점
+
+$formatted
+    """.trimIndent()
+
         tvContent.text = displayText
         dialog.show()
     }
+
 
     private fun formatFeedbackText(raw: String): String {
         return raw
