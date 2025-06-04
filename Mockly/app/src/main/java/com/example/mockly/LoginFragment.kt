@@ -48,6 +48,11 @@ class LoginFragment : Fragment() {
                     loginWithKakaoAccount()
                 } else if (token != null) {
                     Log.d("KakaoToken", "✅ idToken: ${token.idToken}")
+
+                    // ✅ 카카오 accessToken 저장 (선택)
+                    val prefs = requireActivity().getSharedPreferences("mockly_prefs", Context.MODE_PRIVATE)
+                    prefs.edit().putString("kakaoAccessToken", token.accessToken).apply()
+
                     sendKakaoTokenToServer(token.idToken ?: "")
                 }
             }
@@ -62,6 +67,11 @@ class LoginFragment : Fragment() {
                 Toast.makeText(requireContext(), "카카오 계정 로그인 실패", Toast.LENGTH_SHORT).show()
             } else if (token != null) {
                 Log.d("KakaoToken", "✅ idToken: ${token.idToken}")
+
+                // ✅ 카카오 accessToken 저장 (선택)
+                val prefs = requireActivity().getSharedPreferences("mockly_prefs", Context.MODE_PRIVATE)
+                prefs.edit().putString("kakaoAccessToken", token.accessToken).apply()
+
                 sendKakaoTokenToServer(token.idToken ?: "")
             }
         }
@@ -115,6 +125,7 @@ class LoginFragment : Fragment() {
 
                         activity?.runOnUiThread {
                             Toast.makeText(requireContext(), "✅ 로그인 성공", Toast.LENGTH_SHORT).show()
+
                             if (isNewMember) {
                                 (activity as? MainActivity)?.showNicknameFragment()
                             } else {
@@ -194,7 +205,7 @@ class LoginFragment : Fragment() {
 
                 val point = try {
                     val json = JSONObject(responseBody)
-                    json.optInt("data", 0)  // ✅ "data" 필드에 들어있는 포인트만 파싱
+                    json.optInt("data", 0)
                 } catch (e: Exception) {
                     Log.e("PointFetch", "❌ 정수 추출 실패", e)
                     0
@@ -214,8 +225,6 @@ class LoginFragment : Fragment() {
             }
         })
     }
-
-
 
     private fun goToIntro() {
         if (!isAdded || activity == null) return

@@ -24,9 +24,12 @@ interface InterviewApiService {
 
     @Multipart
     @POST("llm/upload/qa")
-    fun uploadAnswerText(
-        @Part STT_file: MultipartBody.Part
-    ): Call<ResponseBody>  // 성공 여부만 받는 경우
+    fun uploadAnswerTextWithToken(
+        @Part STT_file: MultipartBody.Part,
+        @Header("Authorization") token: String
+    ): Call<ResponseBody>
+
+
 
     @GET("llm/feedbacks")
     fun getFeedbacks(@QueryMap memberOpt: Map<String, String>): Call<FeedbackResponse>
