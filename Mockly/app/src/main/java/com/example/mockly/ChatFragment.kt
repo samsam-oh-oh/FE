@@ -1,6 +1,7 @@
 package com.example.mockly
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
@@ -240,25 +241,35 @@ class ChatFragment : Fragment() {
             .build()
 
         val api = retrofit.create(InterviewApiService::class.java)
+
+        // ✅ WAV -> text -> txt 파일로 저장 완료된 후
         val requestFile = file.asRequestBody("text/plain".toMediaTypeOrNull())
         val body = MultipartBody.Part.createFormData("STT_file", file.name, requestFile)
 
-        api.uploadAnswerText(body).enqueue(object : Callback<ResponseBody> {
+        // ✅ AccessToken 꺼내기
+        val accessToken = requireActivity()
+            .getSharedPreferences("mockly_prefs", Context.MODE_PRIVATE)
+            .getString("token", "") ?: ""
+
+        // ✅ Authorization 헤더 형식으로 변환
+        val authHeader = "Bearer $accessToken"
+
+        api.uploadAnswerTextWithToken(body, authHeader).enqueue(object : Callback<ResponseBody> {
             override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
                 if (response.isSuccessful) {
-                    Toast.makeText(requireContext(), "✅ 답변 텍스트 전송 완료", Toast.LENGTH_SHORT).show()
-                    Log.d("InterviewAPI", "✅ 서버 응답: ${response.body()?.string()}")
-                    fetchFeedbackFromServer() // ✅ 전송 완료 후 피드백 호출
+                    Log.d("InterviewAPI", "✅ 답변 전송 성공")
+                    fetchFeedbackFromServer()  // 이후 흐름 유지
                 } else {
-                    Log.e("InterviewAPI", "❌ 응답 실패: ${response.code()}")
+                    Log.e("InterviewAPI", "❌ 전송 실패: ${response.code()}")
                 }
             }
 
             override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
-                Log.e("InterviewAPI", "❌ 전송 실패: ${t.localizedMessage}", t)
+                Log.e("InterviewAPI", "❌ 전송 실패: ${t.message}", t)
             }
         })
     }
+
 
     private fun fetchFeedbackFromServer() {
         val retrofit = Retrofit.Builder()
