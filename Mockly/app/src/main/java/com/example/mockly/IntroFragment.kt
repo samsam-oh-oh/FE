@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import com.example.mockly.databinding.FragmentIntroBinding
+import com.example.mockly.MainActivity
 
 class IntroFragment : Fragment() {
 

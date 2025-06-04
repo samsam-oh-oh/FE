@@ -68,16 +68,22 @@ class RankingFragment : Fragment() {
                     val obj = dataArray.getJSONObject(i)
 
                     val nickname = obj.optString("nickname")
-                    val maxScore = obj.optDouble("score", 0.0)
+                    val totalScore = obj.optDouble("totalScore", 0.0)
+                    val techScore = obj.optDouble("techScore", 0.0)
+                    val communicateScore = obj.optDouble("communicateScore", 0.0)
                     val feedback = obj.optString("feedback", "피드백 없음")
+                    val unlocked = obj.optBoolean("unlocked", false)
 
                     result.add(
                         RankingItem(
                             rank = i + 1,
                             nickname = nickname,
-                            maxScore = maxScore,
+                            totalScore = totalScore,
+                            techScore = techScore,
+                            communicateScore = communicateScore,
                             feedback = feedback,
-                            userPoint = pointAmount  // ✅ 정확히 30으로 나올 것
+                            unlocked = unlocked,
+                            userPoint = pointAmount
                         )
                     )
                 }
